@@ -85,8 +85,8 @@ err:
     return NULL;
 }
 
-void
-{{ .lib }}_init(struct LFILibCalls* lfi_)
+static void
+lib_init(struct LFILibCalls* lfi_)
 {
     assert(lfi_);
     lfi = lfi_;
@@ -155,10 +155,10 @@ void
     lfi_jni_init();
 }
 
-__attribute__((weak)) void
-lfi_lib_init(struct LFILibCalls* lfi_)
+__attribute__((constructor)) void
+{{ .lib }}_construct(void)
 {
-    {{ .lib }}_init(lfi_);
+    lib_init(lfi_libcalls());
 }
 
 extern void {{ .lib }}__lfi_thread_create(void* fn);

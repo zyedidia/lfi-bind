@@ -89,7 +89,7 @@ func CompileDynamicLib(dir, out string) {
 		filepath.Join(dir, fmt.Sprintf("embed/lib/arch/%s/callback.S", Arch(*arch))),
 		filepath.Join(dir, fmt.Sprintf("embed/lib/arch/%s/trampolines.S", Arch(*arch))),
 		"-I", filepath.Join(dir, "embed/lib"),
-		"-O2", "-fPIC", "-shared",
+		"-O2", "-fPIC", "-shared", "-llfi",
 		"-o", out,
 	}
 	if *nodl {

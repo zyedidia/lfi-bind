@@ -7,13 +7,17 @@
 
 .macro get_ctx
 #ifndef NODLOPEN
-	adrp x8, :got:lfi
-	ldr	x8, [x8, :got_lo12:lfi]
-	ldr	x8, [x8] // x8 now points to struct LFI
-	ldr x8, [x8] // x8 now points to lfi_ctx callback
+	mov x11, x0
 	mov x9, x30
-	blr x8       // return value is placed in x8
+	adrp x0, :tlsdesc:lfi_myctx
+	ldr x8, [x0, :tlsdesc_lo12:lfi_myctx]
+	add x0, x0, :tlsdesc_lo12:lfi_myctx
+	.tlsdesccall lfi_myctx
+	blr x8
+	mrs x8, tpidr_el0
+	ldr x8, [x8, x0]
 	mov x30, x9
+	mov x0, x11
 #else
 	mrs	x8, tpidr_el0
 	add	x8, x8, #:tprel_hi12:lfi_myctx, lsl #12
@@ -22,19 +26,7 @@
 #endif
 .endm
 
-.globl lfi_ctx
-lfi_ctx:
-	adrp x8, :got:lfi
-	ldr	x8, [x8, :got_lo12:lfi]
-	ldr	x8, [x8] // x8 now points to struct LFI
-	ldr x8, [x8] // x8 now points to lfi_ctx callback
-	mov x9, x30
-	blr x8       // return value is placed in x8
-	mov x30, x9
-	mov x0, x8
-	ret
-
-__lfi_trampoline_slowpath:
+.lfi_trampoline_slowpath:
 	stp x0, x1, [sp, #-16]!
 	stp x2, x3, [sp, #-16]!
 	stp x4, x5, [sp, #-16]!
@@ -57,7 +49,7 @@ __lfi_trampoline_slowpath:
 	get_ctx
 	b 1f
 
-__lfi_trampoline_stack:
+.lfi_trampoline_stack:
 	stp d8, d9,   [sp, #-16]!
 	stp d10, d11, [sp, #-16]!
 	stp d12, d13, [sp, #-16]!
@@ -70,7 +62,7 @@ __lfi_trampoline_stack:
 	stp x29, x30, [sp, #-16]!
 	get_ctx // puts lfi_myctx in x8
 
-	cbz x8, __lfi_trampoline_slowpath
+	cbz x8, .lfi_trampoline_slowpath
 1:
 	ldr x12, [x8, PROC_REGS+16*15+8]
 	// save user sp to stack
@@ -82,10 +74,12 @@ __lfi_trampoline_stack:
 	// set user stack
 	mov sp, x12
 	// set return address to __lfisym__lfi_retfn
-	adrp x11, __lfisym__lfi_retfn
-	ldr x30, [x11, :lo12:__lfisym__lfi_retfn]
+	adrp x11, :got:__lfisym__lfi_retfn
+	ldr x11, [x11, :got_lo12:__lfisym__lfi_retfn]
+	ldr x30, [x11]
 	// set base pointer
 	ldr REG_BASE, [x8, PROC_REGS+8*21]
+	ldr REG_SYS_, [x8, PROC_REGS+8*25]
 	// set address pointer to a valid value
 	mov x18, REG_BASE
 	mov x8, #0
@@ -94,7 +88,9 @@ __lfi_trampoline_stack:
 	br x10
 	brk #0
 
+.global __lfi_trampoline
 __lfi_trampoline:
+.lfi_trampoline:
 	stp d8, d9,   [sp, #-16]!
 	stp d10, d11, [sp, #-16]!
 	stp d12, d13, [sp, #-16]!
@@ -107,7 +103,7 @@ __lfi_trampoline:
 	stp x29, x30, [sp, #-16]!
 	get_ctx // puts lfi_myctx in x8
 
-	cbz x8, __lfi_trampoline_slowpath
+	cbz x8, .lfi_trampoline_slowpath
 1:
 	ldr x12, [x8, PROC_REGS+16*15+8]
 	// save user sp to stack
@@ -119,10 +115,12 @@ __lfi_trampoline:
 	// set user stack
 	mov sp, x12
 	// set return address to __lfisym__lfi_retfn
-	adrp x11, __lfisym__lfi_retfn
-	ldr x30, [x11, :lo12:__lfisym__lfi_retfn]
+	adrp x11, :got:__lfisym__lfi_retfn
+	ldr x11, [x11, :got_lo12:__lfisym__lfi_retfn]
+	ldr x30, [x11]
 	// set base pointer
 	ldr REG_BASE, [x8, PROC_REGS+8*21]
+	ldr REG_SYS_, [x8, PROC_REGS+8*25]
 	// set address pointer to a valid value
 	mov x18, REG_BASE
 	mov x8, #0
@@ -137,12 +135,21 @@ __lfi_trampolines:
 .p2align 4
 .global {{$sym}}
 {{$sym}}:
-	adrp x10, __lfisym_{{$sym}}
-	ldr x10, [x10, :lo12:__lfisym_{{$sym}}]
+	adrp x10, :got:jni_env
+	ldr x10, [x10, :got_lo12:jni_env]
+	str x0, [x10]
+
+	adrp x10, :got:jni_proxy
+	ldr x10, [x10, :got_lo12:jni_proxy]
+	ldr x0, [x10]
+
+	adrp x10, :got:__lfisym_{{$sym}}
+	ldr x10, [x10, :got_lo12:__lfisym_{{$sym}}]
+	ldr x10, [x10]
 	{{if (has_stack_args $sym)}}
-	b __lfi_trampoline_stack
+	b .lfi_trampoline_stack
 	{{else}}
-	b __lfi_trampoline
+	b .lfi_trampoline
 	{{end}}
 {{- end}}
 
@@ -150,12 +157,13 @@ __lfi_trampolines:
 .p2align 4
 .global {{$.lib}}_{{$sym}}
 {{$.lib}}_{{$sym}}:
-	adrp x10, __lfisym_{{$sym}}
-	ldr x10, [x10, :lo12:__lfisym_{{$sym}}]
+	adrp x10, :got:__lfisym_{{$sym}}
+	ldr x10, [x10, :got_lo12:__lfisym_{{$sym}}]
+	ldr x10, [x10]
 	{{if (has_stack_args $sym)}}
-	b __lfi_trampoline_stack
+	b .lfi_trampoline_stack
 	{{else}}
-	b __lfi_trampoline
+	b .lfi_trampoline
 	{{end}}
 {{- end}}
 
@@ -178,5 +186,8 @@ __lfisym_{{$sym}}:
 .global __lfi_trampotable_size
 __lfi_trampotable_size:
 	.quad {{.nexported}}+{{.nexposed}}
+
+.global __lfisym__lfi_pause
+.global __lfisym__lfi_thread_create
 
 .section .note.GNU-stack,"",@progbits
