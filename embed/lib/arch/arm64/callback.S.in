@@ -9,6 +9,7 @@
     adrp x0, :tlsdesc:lfi_myctx
     ldr x8, [x0, :tlsdesc_lo12:lfi_myctx]
     add x0, x0, :tlsdesc_lo12:lfi_myctx
+    // this tls descriptor call must preserve all registers except x0
     .tlsdesccall lfi_myctx
     blr x8
     mrs x8, tpidr_el0
@@ -51,6 +52,9 @@
 	ldr x12, [x8, PROC_REGS+16*15+8]
 	// restore previous user sp in ctx
 	str x11, [x8, PROC_REGS+16*15+8]
+    // make sure we don't clobber the kernel stack pointer
+    mov x11, sp
+    str x11, [x8]
 	// restore sp to current user sp
 	mov sp, x12
 

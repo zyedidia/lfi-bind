@@ -189,6 +189,7 @@ __lfi_trampolines:
 __lfi_trampotable:
 
 {{- range $sym := .exported}}
+.global __lfisym_{{$sym}}
 __lfisym_{{$sym}}:
 	.quad 0
 {{- end}}
