@@ -47,7 +47,7 @@ func ObjGetExports(file *elf.File, es map[string]bool) []string {
 	return exports
 }
 
-func DynamicGetExports(dynlib *os.File, es map[string]bool) ([]string, map[string][]StackArg) {
+func DynamicGetExports(dynlib *os.File, es map[string]bool) ([]string, StackArgInfo) {
 	f, err := elf.NewFile(dynlib)
 	if err != nil {
 		fatal(err)
@@ -55,7 +55,7 @@ func DynamicGetExports(dynlib *os.File, es map[string]bool) ([]string, map[strin
 	return ObjGetExports(f, es), ObjGetStackArgs(f, es)
 }
 
-func StaticGetExports(staticlib *os.File, es map[string]bool) ([]string, map[string][]StackArg) {
+func StaticGetExports(staticlib *os.File, es map[string]bool) ([]string, StackArgInfo) {
 	r, err := ar.NewReader(staticlib)
 	if err != nil {
 		fatal(err)
@@ -77,7 +77,13 @@ func StaticGetExports(staticlib *os.File, es map[string]bool) ([]string, map[str
 		}
 		exports = append(exports, ObjGetExports(ef, es)...)
 	}
-	return exports, nil
+	return exports, StackArgInfo{}
+}
+
+type StackArgInfo struct {
+	Fn   uint64
+	Sret uint32
+	Args map[string][]StackArg
 }
 
 type StackArg struct {
@@ -85,10 +91,10 @@ type StackArg struct {
 	Size   uint32
 }
 
-func ObjGetStackArgs(file *elf.File, es map[string]bool) map[string][]StackArg {
+func ObjGetStackArgs(file *elf.File, es map[string]bool) StackArgInfo {
 	sec := file.Section(".stack_args")
 	if sec == nil {
-		return nil
+		return StackArgInfo{}
 	}
 
 	syms, err := file.Symbols()
@@ -100,14 +106,20 @@ func ObjGetStackArgs(file *elf.File, es map[string]bool) map[string][]StackArg {
 		symtab[sym.Value] = sym.Name
 	}
 
-	info := make(map[string][]StackArg)
+	info := StackArgInfo{
+		Args: make(map[string][]StackArg),
+	}
 
 	b := make([]byte, 8)
 	idx := uint64(0)
 	for idx < sec.Size {
 		sec.ReadAt(b, int64(idx))
 		idx += 8
-		fn := binary.LittleEndian.Uint64(b)
+		info.Fn = binary.LittleEndian.Uint64(b)
+
+		sec.ReadAt(b, int64(idx))
+		idx += 4
+		info.Sret = binary.LittleEndian.Uint32(b)
 
 		sec.ReadAt(b, int64(idx))
 		idx += 4
@@ -130,8 +142,8 @@ func ObjGetStackArgs(file *elf.File, es map[string]bool) map[string][]StackArg {
 			})
 		}
 
-		sym := symtab[fn]
-		info[sym] = args
+		sym := symtab[info.Fn]
+		info.Args[sym] = args
 	}
 
 	fmt.Println(info)
