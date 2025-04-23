@@ -167,6 +167,10 @@ func main() {
 
 	WriteFiles(dir, *libname, "embed/lib", exports, exposed, objmap, stackinfo.Args)
 
+	if *genLib != "" {
+		return
+	}
+
 	if static && !*dyn {
 		CompileStaticLib(dir, *out)
 	} else {
