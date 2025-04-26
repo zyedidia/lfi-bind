@@ -8,13 +8,20 @@
 #include <string.h>
 #include <unistd.h>
 #include <stdlib.h>
+#include <syscall.h>
 #include <sys/mman.h>
 
 #include "lfi.h"
 #include "lfi_tux.h"
 
+int
+memfd_create(const char* name, unsigned flags)
+{
+    return syscall(SYS_memfd_create, name, flags);
+}
+
 enum {
-    PATH_MAX = 64,
+    LIB_PATH_MAX = 64,
 };
 
 struct FileData {
@@ -46,7 +53,7 @@ static struct FileData*
 findfiledata(const char* filename)
 {
     for (size_t i = 0; i < lfibind_nfiles; i++) {
-        if (strncmp(filename, lfibind_filenames[i], PATH_MAX) == 0)
+        if (strncmp(filename, lfibind_filenames[i], LIB_PATH_MAX) == 0)
             return &lfibind_filedata[i];
     }
     return NULL;

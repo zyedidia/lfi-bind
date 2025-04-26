@@ -11,145 +11,145 @@ struct JNIProxy** jni_proxy;
 JNIEnv* jni_env;
 
 static void
-jni_Disabled(void* e)
+jni_Disabled(void* _e)
 {
     (*jni_env)->FatalError(jni_env, "The requested JNI callback is disabled in this sandbox");
 }
 
 static jint
-jni_GetVersion(void*)
+jni_GetVersion(void* _e)
 {
     return (*jni_env)->GetVersion(jni_env);
 }
 
 static jsize
-jni_GetArrayLength(void*, jarray array)
+jni_GetArrayLength(void* _e, jarray array)
 {
     return (*jni_env)->GetArrayLength(jni_env, array);
 }
 
 // TODO: sanitize name and buf
 static jclass
-jni_DefineClass(void*, const char* name, jobject loader, const jbyte* buf, jsize len)
+jni_DefineClass(void* _e, const char* name, jobject loader, const jbyte* buf, jsize len)
 {
     return (*jni_env)->DefineClass(jni_env, name, loader, buf, len);
 }
 
 // TODO: sanitize name
 static jclass
-jni_FindClass(void*, const char* name)
+jni_FindClass(void* _e, const char* name)
 {
     return (*jni_env)->FindClass(jni_env, name);
 }
 
 static jmethodID
-jni_FromReflectedMethod(void*, jobject method)
+jni_FromReflectedMethod(void* _e, jobject method)
 {
     return (*jni_env)->FromReflectedMethod(jni_env, method);
 }
 
 static jfieldID
-jni_FromReflectedField(void*, jobject field)
+jni_FromReflectedField(void* _e, jobject field)
 {
     return (*jni_env)->FromReflectedField(jni_env, field);
 }
 
 static jobject
-jni_ToReflectedMethod(void*, jclass cls, jmethodID methodID, jboolean isStatic)
+jni_ToReflectedMethod(void* _e, jclass cls, jmethodID methodID, jboolean isStatic)
 {
     return (*jni_env)->ToReflectedMethod(jni_env, cls, methodID, isStatic);
 }
 
 static jclass
-jni_GetSuperclass(void*, jclass sub)
+jni_GetSuperclass(void* _e, jclass sub)
 {
     return (*jni_env)->GetSuperclass(jni_env, sub);
 }
 
 static jboolean
-jni_IsAssignableFrom(void*, jclass sub, jclass sup)
+jni_IsAssignableFrom(void* _e, jclass sub, jclass sup)
 {
     return (*jni_env)->IsAssignableFrom(jni_env, sub, sup);
 }
 
 static jobject
-jni_ToReflectedField(void*, jclass cls, jfieldID fieldID, jboolean isStatic)
+jni_ToReflectedField(void* _e, jclass cls, jfieldID fieldID, jboolean isStatic)
 {
     return (*jni_env)->ToReflectedField(jni_env, cls, fieldID, isStatic);
 }
 
 static jobject
-jni_AllocObject(void*, jclass clazz)
+jni_AllocObject(void* _e, jclass clazz)
 {
     return (*jni_env)->AllocObject(jni_env, clazz);
 }
 
 // TODO: sanitize args
 static jobject
-jni_NewObjectV(void*, jclass clazz, jmethodID methodID, va_list args)
+jni_NewObjectV(void* _e, jclass clazz, jmethodID methodID, va_list args)
 {
     return (*jni_env)->NewObjectV(jni_env, clazz, methodID, args);
 }
 
 // TODO: sanitize args
 static jobject
-jni_NewObjectA(void*, jclass clazz, jmethodID methodID, const jvalue* args)
+jni_NewObjectA(void* _e, jclass clazz, jmethodID methodID, const jvalue* args)
 {
     return (*jni_env)->NewObjectA(jni_env, clazz, methodID, args);
 }
 
 static jclass
-jni_GetObjectClass(void*, jobject obj)
+jni_GetObjectClass(void* _e, jobject obj)
 {
     return (*jni_env)->GetObjectClass(jni_env, obj);
 }
 
 static jboolean
-jni_IsInstanceOf(void*, jobject obj, jclass clazz)
+jni_IsInstanceOf(void* _e, jobject obj, jclass clazz)
 {
     return (*jni_env)->IsInstanceOf(jni_env, obj, clazz);
 }
 
 static jint
-jni_Throw(void*, jthrowable obj)
+jni_Throw(void* _e, jthrowable obj)
 {
     return (*jni_env)->Throw(jni_env, obj);
 }
 
 static jint
-jni_ThrowNew(void*, jclass clazz, const char* msg)
+jni_ThrowNew(void* _e, jclass clazz, const char* msg)
 {
     // TODO: sanitize msg
     return (*jni_env)->ThrowNew(jni_env, clazz, msg);
 }
 
 static jthrowable
-jni_ExceptionOccurred(void*)
+jni_ExceptionOccurred(void* _e)
 {
     return (*jni_env)->ExceptionOccurred(jni_env);
 }
 
 static void
-jni_ExceptionDescribe(void*)
+jni_ExceptionDescribe(void* _e)
 {
     (*jni_env)->ExceptionDescribe(jni_env);
 }
 
 static void
-jni_ExceptionClear(void*)
+jni_ExceptionClear(void* _e)
 {
     (*jni_env)->ExceptionClear(jni_env);
 }
 
 static void
-jni_FatalError(void*, const char* msg)
+jni_FatalError(void* _e, const char* msg)
 {
     // TODO: sanitize msg
     (*jni_env)->FatalError(jni_env, msg);
 }
 
 static jfieldID
-jni_GetFieldID(void*, jclass clazz, const char* name, const char* sig)
+jni_GetFieldID(void* _e, jclass clazz, const char* name, const char* sig)
 {
     // TODO: sanitize name and sig
     return (*jni_env)->GetFieldID(jni_env, clazz, name, sig);
@@ -157,20 +157,20 @@ jni_GetFieldID(void*, jclass clazz, const char* name, const char* sig)
 
 #define DEFINE_GetField(typename, jtype) \
     static jtype \
-    jni_Get##typename##Field(void*, jobject obj, jfieldID fieldID) \
+    jni_Get##typename##Field(void* _e, jobject obj, jfieldID fieldID) \
     { \
         return (*jni_env)->Get##typename##Field(jni_env, obj, fieldID); \
     }
 
 #define DEFINE_SetField(typename, jtype) \
     static void \
-    jni_Set##typename##Field(void*, jobject obj, jfieldID fieldID, jtype val) \
+    jni_Set##typename##Field(void* _e, jobject obj, jfieldID fieldID, jtype val) \
     { \
         (*jni_env)->Set##typename##Field(jni_env, obj, fieldID, val); \
     }
 
 static jfieldID
-jni_GetStaticFieldID(void*, jclass clazz, const char* name, const char* sig)
+jni_GetStaticFieldID(void* _e, jclass clazz, const char* name, const char* sig)
 {
     // TODO: sanitize name and sig
     return (*jni_env)->GetStaticFieldID(jni_env, clazz, name, sig);
@@ -178,14 +178,14 @@ jni_GetStaticFieldID(void*, jclass clazz, const char* name, const char* sig)
 
 #define DEFINE_GetStaticField(typename, jtype) \
     static jtype \
-    jni_GetStatic##typename##Field(void*, jobject obj, jfieldID fieldID) \
+    jni_GetStatic##typename##Field(void* _e, jobject obj, jfieldID fieldID) \
     { \
         return (*jni_env)->GetStatic##typename##Field(jni_env, obj, fieldID); \
     }
 
 #define DEFINE_SetStaticField(typename, jtype) \
     static void \
-    jni_SetStatic##typename##Field(void*, jobject obj, jfieldID fieldID, jtype val) \
+    jni_SetStatic##typename##Field(void* _e, jobject obj, jfieldID fieldID, jtype val) \
     { \
         (*jni_env)->SetStatic##typename##Field(jni_env, obj, fieldID, val); \
     }
@@ -232,7 +232,7 @@ static ht_t jni_buffers;
 // TODO: sanitize isCopy
 #define DEFINE_GetArrayElements(typename, jtype) \
     static jtype* \
-    jni_Get##typename##ArrayElements(void*, jtype##Array array, jboolean* isCopy) \
+    jni_Get##typename##ArrayElements(void* _e, jtype##Array array, jboolean* isCopy) \
     { \
         jsize len = (*jni_env)->GetArrayLength(jni_env, array); \
         jtype* sandbox_array = {{.lib}}_malloc(len * sizeof(jtype)); \
@@ -275,7 +275,7 @@ static ht_t jni_buffers;
 // TODO: sanitize buf
 #define DEFINE_GetArrayRegion(typename, jtype) \
 static void \
-jni_Get##typename##ArrayRegion(void*, jtype##Array array, jsize start, jsize len, jtype* buf) \
+jni_Get##typename##ArrayRegion(void* _e, jtype##Array array, jsize start, jsize len, jtype* buf) \
 { \
     (*jni_env)->Get##typename##ArrayRegion(jni_env, array, start, len, buf); \
 }
@@ -283,14 +283,14 @@ jni_Get##typename##ArrayRegion(void*, jtype##Array array, jsize start, jsize len
 // TODO: sanitize buf
 #define DEFINE_SetArrayRegion(typename, jtype) \
     static void \
-    jni_Set##typename##ArrayRegion(void*, jtype##Array array, jsize start, jsize len, const jtype* buf) \
+    jni_Set##typename##ArrayRegion(void* _e, jtype##Array array, jsize start, jsize len, const jtype* buf) \
     { \
         (*jni_env)->Set##typename##ArrayRegion(jni_env, array, start, len, buf); \
     }
 
 #define DEFINE_NewArray(typename, jtype) \
     static jtype##Array \
-    jni_New##typename##Array(void*, jsize len) \
+    jni_New##typename##Array(void* _e, jsize len) \
     { \
         return (*jni_env)->New##typename##Array(jni_env, len); \
     }
@@ -337,39 +337,39 @@ DEFINE_ReleaseArrayElements(Float, jfloat)
 DEFINE_ReleaseArrayElements(Double, jdouble)
 
 static jobjectArray
-jni_NewObjectArray(void*, jsize len, jclass clazz, jobject init)
+jni_NewObjectArray(void* _e, jsize len, jclass clazz, jobject init)
 {
     return (*jni_env)->NewObjectArray(jni_env, len, clazz, init);
 }
 
 static jobject
-jni_GetObjectArrayElement(void*, jobjectArray array, jsize index)
+jni_GetObjectArrayElement(void* _e, jobjectArray array, jsize index)
 {
     return (*jni_env)->GetObjectArrayElement(jni_env, array, index);
 }
 
 static void
-jni_SetObjectArrayElement(void*, jobjectArray array, jsize index, jobject val)
+jni_SetObjectArrayElement(void* _e, jobjectArray array, jsize index, jobject val)
 {
     (*jni_env)->SetObjectArrayElement(jni_env, array, index, val);
 }
 
 // TODO: sanitize unicode
 static jstring
-jni_NewString(void*, const jchar* unicode, jsize len)
+jni_NewString(void* _e, const jchar* unicode, jsize len)
 {
     return (*jni_env)->NewString(jni_env, unicode, len);
 }
 
 static jsize
-jni_GetStringLength(void*, jstring str)
+jni_GetStringLength(void* _e, jstring str)
 {
     return (*jni_env)->GetStringLength(jni_env, str);
 }
 
 // TODO: sanitize isCopy
 static const jchar*
-jni_GetStringChars(void*, jstring str, jboolean* isCopy)
+jni_GetStringChars(void* _e, jstring str, jboolean* isCopy)
 {
     jsize len = (*jni_env)->GetStringLength(jni_env, str);
     jchar* sandbox_array = {{.lib}}_malloc(len * sizeof(jchar));
@@ -384,7 +384,7 @@ jni_GetStringChars(void*, jstring str, jboolean* isCopy)
 }
 
 static void
-jni_ReleaseStringChars(void*, jstring str, jchar* chars)
+jni_ReleaseStringChars(void* _e, jstring str, jchar* chars)
 {
     bool found;
     void* native_array = ht_get(&jni_buffers, chars, &found);
@@ -397,20 +397,20 @@ jni_ReleaseStringChars(void*, jstring str, jchar* chars)
 
 // TODO: sanitize utf
 static jstring
-jni_NewStringUTF(void*, const char* utf)
+jni_NewStringUTF(void* _e, const char* utf)
 {
     return (*jni_env)->NewStringUTF(jni_env, utf);
 }
 
 static jsize
-jni_GetStringUTFLength(void*, jstring str)
+jni_GetStringUTFLength(void* _e, jstring str)
 {
     return (*jni_env)->GetStringUTFLength(jni_env, str);
 }
 
 // TODO: sanitize isCopy
 static char*
-jni_GetStringUTFChars(void*, jstring str, jboolean* isCopy)
+jni_GetStringUTFChars(void* _e, jstring str, jboolean* isCopy)
 {
     jsize len = (*jni_env)->GetStringUTFLength(jni_env, str);
     char* sandbox_array = {{.lib}}_malloc(len * sizeof(char));
@@ -425,7 +425,7 @@ jni_GetStringUTFChars(void*, jstring str, jboolean* isCopy)
 }
 
 static void
-jni_ReleaseStringUTFChars(void*, jstring str, char* chars)
+jni_ReleaseStringUTFChars(void* _e, jstring str, char* chars)
 {
     bool found;
     void* native_array = ht_get(&jni_buffers, chars, &found);
@@ -438,32 +438,32 @@ jni_ReleaseStringUTFChars(void*, jstring str, char* chars)
 
 // TODO: sanitize buf
 static void
-jni_GetStringRegion(void*, jstring str, jsize start, jsize len, jchar* buf)
+jni_GetStringRegion(void* _e, jstring str, jsize start, jsize len, jchar* buf)
 {
     (*jni_env)->GetStringRegion(jni_env, str, start, len, buf);
 }
 
 // TODO: sanitize buf
 static void
-jni_GetStringUTFRegion(void*, jstring str, jsize start, jsize len, char* buf)
+jni_GetStringUTFRegion(void* _e, jstring str, jsize start, jsize len, char* buf)
 {
     (*jni_env)->GetStringUTFRegion(jni_env, str, start, len, buf);
 }
 
 static void*
-jni_GetPrimitiveArrayCritical(void*, jarray array, jboolean* isCopy)
+jni_GetPrimitiveArrayCritical(void* _e, jarray array, jboolean* isCopy)
 {
     assert(!"GetPrimitiveArrayCritical: unimplemented");
 }
 
 static void*
-jni_ReleasePrimitiveArrayCritical(void*, jarray array, void* carray, jint mode)
+jni_ReleasePrimitiveArrayCritical(void* _e, jarray array, void* carray, jint mode)
 {
     assert(!"ReleasePrimitiveArrayCritical: unimplemented");
 }
 
 static jchar*
-jni_GetStringCritical(void*, jstring string, jboolean* isCopy)
+jni_GetStringCritical(void* _e, jstring string, jboolean* isCopy)
 {
     jsize len = (*jni_env)->GetStringLength(jni_env, string);
     jchar* sandbox_array = {{.lib}}_malloc(len * sizeof(jchar));
@@ -478,7 +478,7 @@ jni_GetStringCritical(void*, jstring string, jboolean* isCopy)
 }
 
 static void
-jni_ReleaseStringCritical(void*, jstring string, jchar* cstring)
+jni_ReleaseStringCritical(void* _e, jstring string, jchar* cstring)
 {
     bool found;
     void* native_array = ht_get(&jni_buffers, cstring, &found);
@@ -490,14 +490,14 @@ jni_ReleaseStringCritical(void*, jstring string, jchar* cstring)
 }
 
 static jmethodID
-jni_GetMethodID(void*, jclass clazz, const char* name, const char* sig)
+jni_GetMethodID(void* _e, jclass clazz, const char* name, const char* sig)
 {
     // TODO: sanitize name and sig
     return (*jni_env)->GetMethodID(jni_env, clazz, name, sig);
 }
 
 static jmethodID
-jni_GetStaticMethodID(void*, jclass clazz, const char* name, const char* sig)
+jni_GetStaticMethodID(void* _e, jclass clazz, const char* name, const char* sig)
 {
     // TODO: sanitize name and sig
     return (*jni_env)->GetStaticMethodID(jni_env, clazz, name, sig);
@@ -506,7 +506,7 @@ jni_GetStaticMethodID(void*, jclass clazz, const char* name, const char* sig)
 // TODO: sanitize args
 #define DEFINE_CallMethodV(typename, jtype) \
     static jtype \
-    jni_Call##typename##MethodV(void*, jobject obj, jmethodID methodID, va_list args) \
+    jni_Call##typename##MethodV(void* _e, jobject obj, jmethodID methodID, va_list args) \
     { \
         va_list args_copy; \
         va_copy(args_copy, args); \
@@ -518,7 +518,7 @@ jni_GetStaticMethodID(void*, jclass clazz, const char* name, const char* sig)
 // TODO: sanitize args
 #define DEFINE_CallMethodA(typename, jtype) \
     static jtype \
-    jni_Call##typename##MethodA(void*, jobject obj, jmethodID methodID, jvalue* args) \
+    jni_Call##typename##MethodA(void* _e, jobject obj, jmethodID methodID, jvalue* args) \
     { \
         return (*jni_env)->Call##typename##MethodA(jni_env, obj, methodID, args); \
     }
@@ -535,7 +535,7 @@ jni_CallVoidMethodV(void* e, jobject obj, jmethodID methodID, va_list args)
 
 // TODO: sanitize args
 static void
-jni_CallVoidMethodA(void*, jobject obj, jmethodID methodID, jvalue* args)
+jni_CallVoidMethodA(void* _e, jobject obj, jmethodID methodID, jvalue* args)
 {
     (*jni_env)->CallVoidMethodA(jni_env, obj, methodID, args);
 }
@@ -543,7 +543,7 @@ jni_CallVoidMethodA(void*, jobject obj, jmethodID methodID, jvalue* args)
 // TODO: sanitize args
 #define DEFINE_CallNonvirtualMethodV(typename, jtype) \
     static jtype \
-    jni_CallNonvirtual##typename##MethodV(void*, jobject obj, jclass clazz, jmethodID methodID, va_list args) \
+    jni_CallNonvirtual##typename##MethodV(void* _e, jobject obj, jclass clazz, jmethodID methodID, va_list args) \
     { \
         va_list args_copy; \
         va_copy(args_copy, args); \
@@ -555,14 +555,14 @@ jni_CallVoidMethodA(void*, jobject obj, jmethodID methodID, jvalue* args)
 // TODO: sanitize args
 #define DEFINE_CallNonvirtualMethodA(typename, jtype) \
     static jtype \
-    jni_CallNonvirtual##typename##MethodA(void*, jobject obj, jclass clazz, jmethodID methodID, jvalue* args) \
+    jni_CallNonvirtual##typename##MethodA(void* _e, jobject obj, jclass clazz, jmethodID methodID, jvalue* args) \
     { \
         return (*jni_env)->CallNonvirtual##typename##MethodA(jni_env, obj, clazz, methodID, args); \
     }
 
 // TODO: sanitize args
 static void
-jni_CallNonvirtualVoidMethodV(void*, jobject obj, jclass clazz, jmethodID methodID, va_list args)
+jni_CallNonvirtualVoidMethodV(void* _e, jobject obj, jclass clazz, jmethodID methodID, va_list args)
 {
     va_list args_copy;
     va_copy(args_copy, args);
@@ -572,7 +572,7 @@ jni_CallNonvirtualVoidMethodV(void*, jobject obj, jclass clazz, jmethodID method
 
 // TODO: sanitize args
 static void
-jni_CallNonvirtualVoidMethodA(void*, jobject obj, jclass clazz, jmethodID methodID, jvalue* args)
+jni_CallNonvirtualVoidMethodA(void* _e, jobject obj, jclass clazz, jmethodID methodID, jvalue* args)
 {
     (*jni_env)->CallNonvirtualVoidMethodA(jni_env, obj, clazz, methodID, args);
 }
@@ -580,7 +580,7 @@ jni_CallNonvirtualVoidMethodA(void*, jobject obj, jclass clazz, jmethodID method
 // TODO: sanitize args
 #define DEFINE_CallStaticMethodV(typename, jtype) \
     static jtype \
-    jni_CallStatic##typename##MethodV(void*, jclass clazz, jmethodID methodID, va_list args) \
+    jni_CallStatic##typename##MethodV(void* _e, jclass clazz, jmethodID methodID, va_list args) \
     { \
         va_list args_copy; \
         va_copy(args_copy, args); \
@@ -592,14 +592,14 @@ jni_CallNonvirtualVoidMethodA(void*, jobject obj, jclass clazz, jmethodID method
 // TODO: sanitize args
 #define DEFINE_CallStaticMethodA(typename, jtype) \
     static jtype \
-    jni_CallStatic##typename##MethodA(void*, jclass clazz, jmethodID methodID, jvalue* args) \
+    jni_CallStatic##typename##MethodA(void* _e, jclass clazz, jmethodID methodID, jvalue* args) \
     { \
         return (*jni_env)->CallStatic##typename##MethodA(jni_env, clazz, methodID, args); \
     }
 
 // TODO: sanitize args
 static void
-jni_CallStaticVoidMethodV(void*, jclass clazz, jmethodID methodID, va_list args)
+jni_CallStaticVoidMethodV(void* _e, jclass clazz, jmethodID methodID, va_list args)
 {
     va_list args_copy;
     va_copy(args_copy, args);
@@ -609,7 +609,7 @@ jni_CallStaticVoidMethodV(void*, jclass clazz, jmethodID methodID, va_list args)
 
 // TODO: sanitize args
 static void
-jni_CallStaticVoidMethodA(void*, jclass clazz, jmethodID methodID, jvalue* args)
+jni_CallStaticVoidMethodA(void* _e, jclass clazz, jmethodID methodID, jvalue* args)
 {
     (*jni_env)->CallStaticVoidMethodA(jni_env, clazz, methodID, args);
 }
