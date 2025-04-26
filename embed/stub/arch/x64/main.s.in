@@ -24,13 +24,7 @@ _lfi_pause:
 .global _lfi_retfn
 _lfi_retfn:
 	// special runtime call for invoking lfi_ret
-	//lfi:disable
-	.bundle_lock
-	leaq 1f(%rip), %r11
-	jmpq *24(%r14)
-1:
-	.bundle_unlock
-	//lfi:enable
+	//lfi:rtcall_return
 	int3
 
 .section ".data.trampotable"

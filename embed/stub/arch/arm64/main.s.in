@@ -16,13 +16,8 @@ _lfi_pause:
 .global _lfi_retfn
 _lfi_retfn:
 	// special pseudo-instruction for calling the return runtime call
-	//lfi:disable
-	mov x22, x30
-	ldr x30, [x21, #24]
-	blr x30
-	add x30, x21, w22, uxtw
+	//lfi:rtcall_return
 	brk #0
-	//lfi:enable
 .section ".data.trampotable"
 .global trampotable
 trampotable:
