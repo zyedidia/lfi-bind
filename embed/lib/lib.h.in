@@ -13,6 +13,8 @@
 // allocator that uses lfi_mmap to map pages inside the sandbox.
 void* {{ .lib }}_malloc(size_t n);
 
+void* {{ .lib }}_realloc(void* p, size_t n);
+
 // {{ .lib }}_free frees a pointer allocated inside the sandbox by {{ .lib }}_malloc.
 void {{ .lib }}_free(void* p);
 

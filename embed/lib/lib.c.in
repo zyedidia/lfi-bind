@@ -8,13 +8,20 @@
 #include <string.h>
 #include <unistd.h>
 #include <stdlib.h>
+#include <syscall.h>
 #include <sys/mman.h>
 
 #include "lfi.h"
 #include "lfi_tux.h"
 
+static int
+sys_memfd_create(const char* name, unsigned flags)
+{
+    return syscall(SYS_memfd_create, name, flags);
+}
+
 enum {
-    PATH_MAX = 64,
+    LIB_PATH_MAX = 64,
 };
 
 struct FileData {
@@ -46,7 +53,7 @@ static struct FileData*
 findfiledata(const char* filename)
 {
     for (size_t i = 0; i < lfibind_nfiles; i++) {
-        if (strncmp(filename, lfibind_filenames[i], PATH_MAX) == 0)
+        if (strncmp(filename, lfibind_filenames[i], LIB_PATH_MAX) == 0)
             return &lfibind_filedata[i];
     }
     return NULL;
@@ -68,7 +75,7 @@ fsopen(const char* filename, int flags, int mode)
     (void) flags, (void) mode;
     struct FileData* data = findfiledata(filename);
     if (data) {
-        int fd = memfd_create("", 0);
+        int fd = sys_memfd_create("", 0);
         if (fd < 0)
             return NULL;
         if (ftruncate(fd, data->end - data->start) < 0)
@@ -85,8 +92,8 @@ err:
     return NULL;
 }
 
-void
-{{ .lib }}_init(struct LFILibCalls* lfi_)
+static void
+lib_init(struct LFILibCalls* lfi_)
 {
     assert(lfi_);
     lfi = lfi_;
@@ -150,6 +157,12 @@ void
     // uses a safe bundle-aligned jump for entry, but probably still a good
     // idea).
     install_trampotable((void**) r);
+}
+
+__attribute__((constructor)) void
+{{ .lib }}_construct(void)
+{
+    lib_init(lfi_libcalls());
 }
 
 extern void {{ .lib }}__lfi_thread_create(void* fn);

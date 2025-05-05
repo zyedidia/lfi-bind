@@ -18,6 +18,7 @@ var exposed = []string{
 	"_lfi_thread_create",
 	"_lfi_thread_destroy",
 	"malloc",
+	"realloc",
 	"calloc",
 	"free",
 }

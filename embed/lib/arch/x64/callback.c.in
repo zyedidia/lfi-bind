@@ -17,7 +17,7 @@ static struct CallbackEntry* cbentries_box;
 static bool
 cbinit(struct LFIContext* ctx)
 {
-    int fd = memfd_create("", 0);
+    int fd = sys_memfd_create("", 0);
     if (fd < 0)
         return false;
     size_t size = MAXCALLBACKS * sizeof(struct CallbackEntry);
