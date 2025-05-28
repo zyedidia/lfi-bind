@@ -1,7 +1,7 @@
 .section ".text.trampolines"
 
 #define N_RTCALLS 256
-#define PROC_REGS 16
+#define PROC_REGS 32
 #define REG_BASE  x21
 #define REG_SYS_  x25
 
@@ -64,6 +64,12 @@
 
 	cbz x8, .lfi_trampoline_slowpath
 1:
+	// Save and replace target of tpidr_el0 with proc pointer.
+	mrs x12, tpidr_el0
+	ldr x13, [x12]
+	str x13, [x8, #16]
+	str x8, [x12]
+
 	ldr x12, [x8, PROC_REGS+16*15+8]
 	// save user sp to stack
 	ldr x13, [x8]
@@ -105,6 +111,12 @@ __lfi_trampoline:
 
 	cbz x8, .lfi_trampoline_slowpath
 1:
+	// Save and replace target of tpidr_el0 with proc pointer.
+	mrs x12, tpidr_el0
+	ldr x13, [x12]
+	str x13, [x8, #16]
+	str x8, [x12]
+
 	ldr x12, [x8, PROC_REGS+16*15+8]
 	// save user sp to stack
 	ldr x13, [x8]

@@ -1,4 +1,4 @@
-#define PROC_REGS 16
+#define PROC_REGS 32
 
 .text
 
@@ -31,6 +31,11 @@
 
 	get_ctx
 
+    // Save and replace target of tpidr_el0 with original value.
+    mrs x11, tpidr_el0
+    ldr x12, [x8, #16]
+    str x12, [x11]
+
 	// get current user sp
 	mov x12, sp
 	// enable kernel sp
@@ -57,6 +62,12 @@
     str x11, [x8]
 	// restore sp to current user sp
 	mov sp, x12
+
+    // Save and replace target of tpidr_el0 with proc pointer.
+    mrs x11, tpidr_el0
+    ldr x12, [x11]
+    str x12, [x8, #16]
+    str x8, [x11]
 
 	add x30, x21, w30, uxtw
 	ret
