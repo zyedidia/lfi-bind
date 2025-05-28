@@ -6,7 +6,8 @@ main:
 	adr x0, _lfi_pause
 	bl _lfi_thread_create
 	// load address of trampoline table and then exit
-	adr x0, trampotable
+	adrp x0, trampotable
+	add x0, x0, :lo12:trampotable
 .global _lfi_pause
 _lfi_pause:
 	mov x8, #94
