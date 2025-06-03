@@ -135,6 +135,7 @@ __lfi_trampolines:
 .p2align 4
 .global {{$sym}}
 {{$sym}}:
+	bti jc
 	adrp x10, :got:__lfisym_{{$sym}}
 	ldr x10, [x10, :got_lo12:__lfisym_{{$sym}}]
 	ldr x10, [x10]
@@ -149,6 +150,7 @@ __lfi_trampolines:
 .p2align 4
 .global {{$.lib}}_{{$sym}}
 {{$.lib}}_{{$sym}}:
+	bti jc
 	adrp x10, :got:__lfisym_{{$sym}}
 	ldr x10, [x10, :got_lo12:__lfisym_{{$sym}}]
 	ldr x10, [x10]
