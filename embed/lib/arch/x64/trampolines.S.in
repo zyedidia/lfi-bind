@@ -1,3 +1,5 @@
+#define PROC_REGS 32
+
 .section ".text.trampolines"
 
 .macro pushx xmm
@@ -90,10 +92,10 @@ lfi_ctx:
 1:
 
     pushq %rbp     // dummy push to keep stack properly aligned
-    pushq 16(%r11) // push user stack value
+    pushq PROC_REGS(%r11) // push user stack value
     movq %rsp, 0(%r11) # kstackp
-    movq 16(%r11), %rsp # stack pointer
-    movq 16+14*8(%r11), %r14 # base pointer
+    movq PROC_REGS(%r11), %rsp # stack pointer
+    movq PROC_REGS+14*8(%r11), %r14 # base pointer
 #ifndef SINGLEBOX
     wrgsbase %r14  // TODO: maybe we can get away with skipping this
 #endif
@@ -127,15 +129,15 @@ __lfi_trampoline:
 1:
 
     pushq %rbp     // dummy push to keep stack properly aligned
-    pushq 16(%r11) // push user stack value
+    pushq PROG_REGS(%r11) // push user stack value
 	movq %rsp, 0(%r11) # kstackp
-	movq 16(%r11), %rsp # stack pointer
-	movq 16+14*8(%r11), %r14 # base pointer
+	movq PROC_REGS(%r11), %rsp # stack pointer
+	movq PROC_REGS+14*8(%r11), %r14 # base pointer
 #ifndef SINGLEBOX
     wrgsbase %r14  // TODO: maybe we can get away with skipping this
 #endif
 #ifdef LARGEBOX
-    movq 16+15*8(%r11), %r15
+    movq PROC_REGS+15*8(%r11), %r15
 #endif
 	mov .lfisym__lfi_retfn@GOTPCREL(%rip), %r11
 	mov (%r11), %r11
