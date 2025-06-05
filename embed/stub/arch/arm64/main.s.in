@@ -2,6 +2,7 @@
 .p2align 4
 .global main
 main:
+	bti c
 	// call _lfi_thread_create(&_lfi_pause)
 	adr x0, _lfi_pause
 	bl _lfi_thread_create
@@ -10,6 +11,7 @@ main:
 	add x0, x0, :lo12:trampotable
 .global _lfi_pause
 _lfi_pause:
+	bti jc
 	mov x8, #94
 	svc #0
 	brk #0
