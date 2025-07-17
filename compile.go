@@ -22,11 +22,8 @@ func Run(command string, args ...string) {
 }
 
 func LibName(lib string) string {
-	if strings.HasPrefix("lib", lib) {
-		_, after, _ := strings.Cut(lib, "lib")
-		return after
-	}
-	return lib
+	after, _ := strings.CutPrefix(lib, "lib")
+	return after
 }
 
 func CompileStub(dir, lib, libpath string, static bool) string {
